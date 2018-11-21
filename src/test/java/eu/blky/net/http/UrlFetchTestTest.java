@@ -72,7 +72,7 @@ class UrlFetchTestTest {
 	void test() throws ClientProtocolException, IOException, DocumentException {
 		UrlFetchTest t = new UrlFetchTest();
 		String url = "https://en.wikipedia.org/wiki/Special:Random";
-		url = "https://habr.com/company/dataart/blog/430514/";
+		//url = "https://habr.com/company/dataart/blog/430514/";
 		String pdf = "1st.pdf";
 		HttpResponse o = t.fetchGetResp(url);
 		System.out.println(o.toString());
