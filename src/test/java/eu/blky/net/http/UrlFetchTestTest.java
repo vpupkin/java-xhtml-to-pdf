@@ -72,8 +72,10 @@ class UrlFetchTestTest {
 	void test() throws Exception {
 		UrlFetchTest t = new UrlFetchTest();
 		String url = "https://en.wikipedia.org/wiki/Special:Random";
-		url = "https://habr.com/company/dataart/blog/430514/";
-		String pdf = "target/tmp/1st.pdf";
+		
+		//url = "http://xmlsoft.org/xmllint.html";
+		//url = "https://habr.com/company/dataart/blog/430514/";
+		 
 		String timebaseTmp="TMP"+System.currentTimeMillis();
 		
 		// plain fetch 
@@ -85,7 +87,9 @@ class UrlFetchTestTest {
 		Writer htmlTmp = new FileWriter(createTempFile);
 		String htmldataTmp = IOUtils.toString(entity.getContent());
 		IOUtils.write(htmldataTmp, htmlTmp);
+		System.out.println("plain html: "+htmldataTmp);
 		htmlTmp.close();
+		PDFRenderer.renderToPDF(url, "target/tmp/phtml.pdf");
 
  
 		// html-> xmlhtml fetch
@@ -97,7 +101,7 @@ class UrlFetchTestTest {
 
 		System.out.println(theString);
 
-		PDFRenderer.renderToPDF(createTempFile, pdf);
+		PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
 
 	}
@@ -468,6 +472,24 @@ ServletOutputStream outTmp;
 		
 		Attribute svgNS = new Attribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 		documentTmp.getRoot().getChild(0).getParent().getAttributes().add(svgNS );
+		
+		// DuD :remove footer....
+		try {
+			// --1		
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+//			// --1
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+//			// --1
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+//			// --1
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+//			// --1
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+//			// --1
+//			documentTmp.getRoot().getChild(1).removeChild(  documentTmp.getRoot().getChild(1).getChild(documentTmp.getRoot().getChild(1).getChildren().size()-1)  );
+		}catch(Throwable e) {
+			e.printStackTrace();
+		}
 		
 		textValue = renderDocument(documentTmp, contextEncStr);
 		byte[] bytesTmp = null;
