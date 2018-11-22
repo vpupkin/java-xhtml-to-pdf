@@ -73,7 +73,7 @@ class UrlFetchTestTest {
 		UrlFetchTest t = new UrlFetchTest();
 		String url = "https://en.wikipedia.org/wiki/Special:Random";
 		url = "https://habr.com/company/dataart/blog/430514/";
-		String pdf = "1st.pdf";
+		String pdf = "target/tmp/1st.pdf";
 		String timebaseTmp="TMP"+System.currentTimeMillis();
 		
 		// plain fetch 
@@ -427,20 +427,20 @@ ServletOutputStream outTmp;
 		outTmp = resp.getOutputStream();
 		String textValue = null;
 		// wrap
-		try {
-			// documentTmp.getRoot().getChild(0).getByXPath("BODY");
-			HTMLNode headTmp = null;
-			HTMLNode baseTmp = null;
-			for (HTMLNode nodeTmp : documentTmp.getRoot().getChild(0).getChildren()) {
-				String nodeNameTmp = nodeTmp.getName().name();
-				if ("HEAD".equals(nodeNameTmp)) {
-					headTmp = nodeTmp;
-				}
-				if ("BASE".equals(nodeNameTmp)) {
-					baseTmp = nodeTmp;
-					break;
-				}
-			}
+//		try {
+//			// documentTmp.getRoot().getChild(0).getByXPath("BODY");
+//			HTMLNode headTmp = null;
+//			HTMLNode baseTmp = null;
+//			for (HTMLNode nodeTmp : documentTmp.getRoot().getChild(0).getChildren()) {
+//				String nodeNameTmp = nodeTmp.getName().name();
+//				if ("HEAD".equals(nodeNameTmp)) {
+//					headTmp = nodeTmp;
+//				}
+//				if ("BASE".equals(nodeNameTmp)) {
+//					baseTmp = nodeTmp;
+//					break;
+//				}
+//			}
 //			if (baseTmp != null) {// getTextValue()
 //				System.out.println(baseTmp.getTextValue());
 //				String avalTmp = baseTmp.getAttributes().get("href").getValue();
@@ -457,11 +457,18 @@ ServletOutputStream outTmp;
 //			HTMLDocument htmlTmp = buildToolbar(urlStr, parser2);
 //			HTMLNode myIFrame = htmlTmp.getRoot().getChild(1).getChild(0);
 //			bodyTmp.addChild(0, myIFrame);
-		} catch (Exception e) {
-			if (TRACE)
-				log.trace("wrap", e);
-			include(resp, "L.jspX");
-		}
+//		} catch (Exception e) {
+//			if (TRACE)
+//				log.trace("wrap", e);
+//			include(resp, "L.jspX");
+//		}
+		
+		// HOTFIX for XML Parsing Error: prefix not bound to a namespace
+		// <use xlink:href="https://habr...
+		
+		Attribute svgNS = new Attribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+		documentTmp.getRoot().getChild(0).getParent().getAttributes().add(svgNS );
+		
 		textValue = renderDocument(documentTmp, contextEncStr);
 		byte[] bytesTmp = null;
 		if (!"null".equals("" + contextEncStr)) {

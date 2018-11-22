@@ -89,7 +89,9 @@ import org.vietspider.token.TypeToken;
   
   @NodeConfig (name = Name.SVG, type = Special.class),
   @NodeConfig (name = Name.STOP, type = Special.class),
-  @NodeConfig (name = Name.LINEGRADIENT, type = Special.class),
+  // </linearGradient/>
+  @NodeConfig (name = Name.LINEARGRADIENT, type = Special.class),
+  
   @NodeConfig (name = Name.G, type = Special.class),
   
   @NodeConfig (name = Name.TIME, type = Special.class),
