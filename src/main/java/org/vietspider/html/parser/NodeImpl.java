@@ -189,6 +189,9 @@ public class NodeImpl extends HTMLNode {
 
 			builder.append('<').append('/').append(strEndTmp).append('>');
 		}
+		if (getConfig().end() == Tag.FORBIDDEN) { 
+			builder.append(' ').append('/').append('>');
+		}
 		return builder;
 	}
 
@@ -357,6 +360,8 @@ public StringBuilder builXHTML(StringBuilder builder) {
 String TABBEDCHARS = "  ";
 public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 	
+	System.out.println("ele::"+LEVEL+"::"+this.getName());
+	
 	// if(value.length < 1) return builder;
 	if (isBeautify() && builder.length() > 0) { 
 		builder.append(SpecChar.n);
@@ -387,7 +392,9 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 			// e.  printStackTrace();
 		}
 		builder.append(startUp);
-		builder.append('>');
+		if (this.getConfig().end() != Tag.FORBIDDEN) { 
+			builder.append('>');
+		}
 		//http://xhtml.com/en/xhtml/reference/script/
 		if ("SCRIPT".equals( nameTmp.toUpperCase()) &&  this.getTextValue().indexOf("<![CDATA[")==-1  ){
 			builder.append("\n//<![CDATA[\n");
@@ -402,14 +409,18 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 		//return builder;
 	}else{
 		for (HTMLNode ele : children) {
-			if (isBeautify()) {
-				StringBuilder tmpBuilder = new StringBuilder();  
-				ele.builXHTML(tmpBuilder,LEVEL+1);
-				for (String nextLine:tmpBuilder.toString().split("\n")){
-					builder.append("\n"+TABBEDCHARS+nextLine+"");
+			try {
+				if (isBeautify()) {
+					StringBuilder tmpBuilder = new StringBuilder();  
+					ele.builXHTML(tmpBuilder,LEVEL+1);
+					for (String nextLine:tmpBuilder.toString().split("\n")){
+						builder.append("\n"+TABBEDCHARS+nextLine+"");
+					}
+				}else{
+					ele.builXHTML(builder,LEVEL+1);
 				}
-			}else{
-				ele.builXHTML(builder,LEVEL+1);
+			}catch(Throwable e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -418,7 +429,7 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 	if (isTag && Name.DOCTYPE != this.name)  
 	{
 
-		if (isBeautify()) {
+		if (isBeautify() && this.getConfig().end() != Tag.FORBIDDEN) {
 			builder.append("\n");
 //			for (int i=0;i<LEVEL-1;i++){
 //				builder.append(TABBEDCHARS);
@@ -428,10 +439,15 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 		if ("SCRIPT".equals( nameTmp.toUpperCase() ) &&  this.getTextValue().indexOf("<![CDATA[")==-1  ){
 			builder.append("\n//]]>");
 		}
-		
-		builder.append("</");
-		builder.append(nameTmp);
-		builder.append('>');
+		if (this.getConfig().end() != Tag.FORBIDDEN) { 
+			
+			builder.append("</");
+			builder.append(nameTmp);
+			builder.append('>');
+		}else {
+			builder.append('/').append('>');
+		 
+		}
 	}
 	return builder;
 }

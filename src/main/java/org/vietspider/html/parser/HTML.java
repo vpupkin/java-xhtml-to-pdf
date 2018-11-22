@@ -55,6 +55,18 @@ import org.vietspider.token.TypeToken;
       start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
       type = HtmlContent.class, only = true
   ),
+  @NodeConfig (name = Name.HEADER, 
+  start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
+  type = HtmlContent.class, only = true
+  ),
+  @NodeConfig (name = Name.ARTICLE, 
+  start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
+  type = HtmlContent.class, only = true
+  ),
+  @NodeConfig (name = Name.USE, 
+  start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
+  type = HtmlContent.class, only = true
+  ),
   @NodeConfig (name = Name.BR, end  = Tag.FORBIDDEN, type = Special.class),
   @NodeConfig (name = Name.BUTTON, type = Formctrl.class),
 
@@ -74,6 +86,14 @@ import org.vietspider.token.TypeToken;
   @NodeConfig (name = Name.DFN, type = Phrase.class),
   @NodeConfig (name = Name.DIR, type = List.class),
   @NodeConfig (name = Name.DIV, type = Block.class),
+  
+  
+  
+  @NodeConfig (name = Name.SVG, type = Special.class),
+  @NodeConfig (name = Name.PATH, type = Special.class),
+  
+  
+  
   @NodeConfig (name = Name.DL, type = Block.class),
   @NodeConfig (name = Name.DT, 
       end = Tag.OPTIONAL, parent = {Name.DL}, type = Default.class, end_names = {Name.DT}
@@ -86,9 +106,10 @@ import org.vietspider.token.TypeToken;
 
   @NodeConfig (name = Name.FIELDSET, type = Block.class),
   @NodeConfig (name = Name.FONT, type = Special.class),
-  @NodeConfig (name = Name.FORM, hidden = true, type = Block.class),
+  @NodeConfig (name = Name.FORM, type = Block.class), //hidden = true, 
   @NodeConfig (name = Name.FRAME, 
-      end  = Tag.FORBIDDEN, parent = {Name.FRAMESET}, type = Default.class
+		  end = Tag.OPTIONAL,
+       parent = {Name.FRAMESET}, type = Default.class // end  = Tag.FORBIDDEN,
   ),
   @NodeConfig (name = Name.FRAMESET, children = {Name.FRAMESET, Name.FRAME, Name.NOFRAMES}, 
 	  type = Default.class
@@ -124,7 +145,7 @@ import org.vietspider.token.TypeToken;
   ),
   @NodeConfig (name = Name.I, type = Fontstyle.class),
   @NodeConfig (name = Name.IFRAME, type = Special.class),
-  @NodeConfig (name = Name.IMG, end  = Tag.FORBIDDEN, type = Special.class),
+  @NodeConfig (name = Name.IMG,  end  = Tag.FORBIDDEN, type = Special.class),
   @NodeConfig (name = Name.INPUT, end  = Tag.FORBIDDEN, type = Formctrl.class),
   @NodeConfig (name = Name.INS, type = Default.class),
   @NodeConfig (name = Name.ISINDEX, end  = Tag.FORBIDDEN, type = Block.class),
@@ -134,12 +155,12 @@ import org.vietspider.token.TypeToken;
   @NodeConfig (name = Name.LABEL, type = Formctrl.class),
   @NodeConfig (name = Name.LEGEND, parent = {Name.FIELDSET} , type = Default.class),
   @NodeConfig (name = Name.LI, end = Tag.OPTIONAL, type = Flow.class, end_names = {Name.LI}),
-  @NodeConfig (name = Name.LINK, end  = Tag.FORBIDDEN, parent = {Name.HEAD}, type = HeadMisc.class),
+  @NodeConfig (name = Name.LINK, end  = Tag.FORBIDDEN, parent = {Name.HEAD}, type = HeadMisc.class), 
 
   @NodeConfig (name = Name.MAP, type = Special.class),
   @NodeConfig (name = Name.MARQUEE, type = Block.class),
   @NodeConfig (name = Name.MENU, type = List.class),
-  @NodeConfig (name = Name.META, end  = Tag.FORBIDDEN, parent = {Name.HEAD}, type = HeadMisc.class),
+  @NodeConfig (name = Name.META, end  = Tag.FORBIDDEN, parent = {Name.HEAD}, type = HeadMisc.class), 
 
   @NodeConfig (name = Name.NOBR, type = Block.class),
   @NodeConfig (name = Name.NOFRAMES, parent = {Name.FRAMESET},
@@ -176,7 +197,7 @@ import org.vietspider.token.TypeToken;
   @NodeConfig (name = Name.SPAN, type = Special.class),
   @NodeConfig (name = Name.STRIKE, type = Fontstyle.class),
   @NodeConfig (name = Name.STRONG, type = Phrase.class),
-  @NodeConfig (name = Name.STYLE, move = MoveType.HEADER, type = HeadMisc.class ),
+  @NodeConfig (name = Name.STYLE, type = Special.class ),
   @NodeConfig (name = Name.SUB, type = Special.class),
   @NodeConfig (name = Name.SUP, type = Special.class),
 

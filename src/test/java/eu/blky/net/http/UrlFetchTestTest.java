@@ -69,22 +69,29 @@ class UrlFetchTestTest {
 			: "https://rrdsaas.appspot.com/l/"; // prod
 
 	@Test
-	void test() throws ClientProtocolException, IOException, DocumentException {
+	void test() throws Exception {
 		UrlFetchTest t = new UrlFetchTest();
 		String url = "https://en.wikipedia.org/wiki/Special:Random";
-		//url = "https://habr.com/company/dataart/blog/430514/";
+		url = "https://habr.com/company/dataart/blog/430514/";
 		String pdf = "1st.pdf";
+		String timebaseTmp="TMP"+System.currentTimeMillis();
+		
+		// plain fetch 
 		HttpResponse o = t.fetchGetResp(url);
 		System.out.println(o.toString());
 		HttpEntity entity = o.getEntity();
 		System.out.println(entity);
+		File createTempFile = File.createTempFile(timebaseTmp, ".html");
+		Writer htmlTmp = new FileWriter(createTempFile);
+		String htmldataTmp = IOUtils.toString(entity.getContent());
+		IOUtils.write(htmldataTmp, htmlTmp);
+		htmlTmp.close();
 
-		InputStream in = entity.getContent();
-		String encoding = "UTF-8";
-		encoding = null == entity.getContentEncoding() ? encoding : entity.getContentEncoding().getValue();
-		String theString = IOUtils.toString(in, encoding);
-		File createTempFile = File.createTempFile("TMP", "xhtml");
-		Writer xhtmlTmp = new FileWriter(createTempFile);
+ 
+		// html-> xmlhtml fetch
+		String theString = getAsXHTML(url);
+		File xhtmlTempFile = File.createTempFile(timebaseTmp, ".xhtml");
+		Writer xhtmlTmp = new FileWriter(xhtmlTempFile);
 		IOUtils.write(theString, xhtmlTmp);
 		xhtmlTmp.close();
 
@@ -97,8 +104,9 @@ class UrlFetchTestTest {
 
 	// public void doGetPost(HttpServletRequest req, HttpServletResponse resp)
 	// throws IOException {
-	public void getAsXHTML(String urlStr) throws Exception {
-		HttpServletResponse resp = getHttpResponse();
+	public String getAsXHTML(String urlStr) throws Exception {
+		ByteArrayOutputStream myBAOS = new ByteArrayOutputStream();
+		HttpServletResponse resp = getHttpResponse(myBAOS);
 		//
 		StringBuilder targetUrl = null;
 		//
@@ -245,7 +253,7 @@ ServletOutputStream outTmp;
 					resp.setContentType(theItem.getCxType());
 					outTmp = resp.getOutputStream();
 					outTmp.write(theItem.getBytes());
-					return ;
+					return myBAOS.toString();
 				} else {
 					try {
 						getCache.remove(urlStr);
@@ -270,27 +278,27 @@ ServletOutputStream outTmp;
 			if (statusLine.getStatusCode() == 401) {
 				resp.setStatus(401);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return;
+				return myBAOS.toString();
 			} else if (statusLine.getStatusCode() == 301) {
 				resp.setStatus(301);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return;
+				return myBAOS.toString();
 			} else if (statusLine.getStatusCode() == 302) {
 				resp.setStatus(302);// xRespTmp.getAllHeaders()
 				resp.setHeader("Location", requestURL.toString());
-				return;
+				return myBAOS.toString();
 			} else if (statusLine.getStatusCode() == 303) {
 				resp.setStatus(303);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return;
+				return myBAOS.toString();
 			} else if (statusLine.getStatusCode() == 304) {
 				resp.setStatus(304);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return;
+				return myBAOS.toString();
 			} else if (statusLine.getStatusCode() == 305) {
 				resp.setStatus(305);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return;
+				return myBAOS.toString();
 			}
 		} catch (Exception e) {
 			if (TRACE)
@@ -329,15 +337,15 @@ ServletOutputStream outTmp;
 		if (isCSS(contextTypeStr)) {
 			setupResponseProperty(resp, xRespTmp);
 			outTmp = performCSS(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
-			return;
+			return myBAOS.toString();
 		} else if (isBinary(contextTypeStr)) {
 			setupResponseProperty(resp, xRespTmp);
 			outTmp = performBinary(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
-			return;
+			return myBAOS.toString();
 		} else if (isScript(contextTypeStr)) {
 			setupResponseProperty(resp, xRespTmp);
 			outTmp = performScript(resp, contextTypeStr, urlStr, entity, contextEncStr);
-			return;
+			return myBAOS.toString();
 
 		} else {
 
@@ -444,10 +452,11 @@ ServletOutputStream outTmp;
 			} else {
 				System.out.println(headTmp);
 			}
-			HTMLNode bodyTmp = documentTmp.getRoot().getChild(0); // HEAD-modi!
-			HTMLDocument htmlTmp = buildToolbar(urlStr, parser2);
-			HTMLNode myIFrame = htmlTmp.getRoot().getChild(1).getChild(0);
-			bodyTmp.addChild(0, myIFrame);
+// TODO remove it			
+//			HTMLNode bodyTmp = documentTmp.getRoot().getChild(0); // HEAD-modi!
+//			HTMLDocument htmlTmp = buildToolbar(urlStr, parser2);
+//			HTMLNode myIFrame = htmlTmp.getRoot().getChild(1).getChild(0);
+//			bodyTmp.addChild(0, myIFrame);
 		} catch (Exception e) {
 			if (TRACE)
 				log.trace("wrap", e);
@@ -464,6 +473,7 @@ ServletOutputStream outTmp;
 		outTmp.write(bytesTmp);
 		// and cache it! // String cxType = contextTypeStr.substring(beginIndex);
 		cacheIt(urlStr, getCache, bytesTmp, cxType);
+		
 
 		// }catch( BlackListedException e){
 		// goToGoooo(resp);
@@ -476,6 +486,9 @@ ServletOutputStream outTmp;
 		// processException(req, resp, targetUrl, e);
 		//
 		// }
+		
+		
+		return myBAOS.toString();
 	}
 
 	private UrlFetchTest getInstance() {
@@ -484,18 +497,14 @@ ServletOutputStream outTmp;
 
 	}
 
-	private HttpServletResponse getHttpResponse() {
-		HttpServletResponse retval = new FakeHttpServletResponse ();
+	private HttpServletResponse getHttpResponse(ByteArrayOutputStream oaosPar) {
+		HttpServletResponse retval = new FakeHttpServletResponse (oaosPar);
 		return retval; 
 	}
 
 	private String[][] calcRequestHeaders() {
-		// TODO Auto-generated method stub
-			if (1 == 1) 
-				throw new RuntimeException(
-							"autogenerated from i1 return not checked value since Nov 21, 2018, 2:23:37 PM ;)!");
-			else
-				/*return*/ return null; 
+		String[][] retval = new String[][] {};
+		return retval; 
 	}
 
  
@@ -807,7 +816,7 @@ ServletOutputStream outTmp;
 //					urlTextTmp.setValue(urlTextTmp.getTextValue().toCharArray());
 //					return commonToolbar;
 //				}
-				String strTmp = "<body><div  name=toolbar>"+ new String(getResourceAsBA("L.jspX") ) +"</div></body>";
+				String strTmp = "<body><div  name='toolbar'>"+ new String(getResourceAsBA("L.jspX") ) +"</div></body>";
 				strTmp = strTmp.replace( "B8b8B8Bbbb888B", calcBase() ); 			
 				// addressBAR
 				String toURL = "l1lll1l1ll1l1lll1l1lll1l1ll1ll11lll111111l1l11ll1l1l1l1l1l11l1";
@@ -869,11 +878,12 @@ ServletOutputStream outTmp;
 			public String renderDocument(HTMLDocument documentTmp, String contextEncStr) {
 				String textValue;
 				if ("KOI8-R".equals(contextEncStr)) {
-					textValue = documentTmp.getTextValue(); 
+					textValue = documentTmp.getRoot().getTextValue();//getTextValue() 
 				}else{
 					HTMLNode doctype = documentTmp.getDoctype();
-					String sDoctype = (doctype==null?"":doctype.getTextValue());
-					textValue = sDoctype  + documentTmp.getRoot().getTextValue();
+					String sDoctype = (doctype==null?"":doctype.getTextValue() );//
+					//textValue = sDoctype  + documentTmp.getRoot().getTextValue();
+					textValue = documentTmp.getRoot().asXHTML();
 					 
 				}
 				return textValue;
