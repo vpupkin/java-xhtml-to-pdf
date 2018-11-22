@@ -63,10 +63,8 @@ import org.vietspider.token.TypeToken;
   start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
   type = HtmlContent.class, only = true
   ),
-  @NodeConfig (name = Name.USE, 
-  start = Tag.OPTIONAL, end = Tag.OPTIONAL,  parent = {Name.HTML},
-  type = HtmlContent.class, only = true
-  ),
+  @NodeConfig (name = Name.USE, end = Tag.FORBIDDEN ,type = Special.class),
+  
   @NodeConfig (name = Name.BR, end  = Tag.FORBIDDEN, type = Special.class),
   @NodeConfig (name = Name.BUTTON, type = Formctrl.class),
 
@@ -90,6 +88,12 @@ import org.vietspider.token.TypeToken;
   
   
   @NodeConfig (name = Name.SVG, type = Special.class),
+  @NodeConfig (name = Name.STOP, type = Special.class),
+  @NodeConfig (name = Name.LINEGRADIENT, type = Special.class),
+  @NodeConfig (name = Name.G, type = Special.class),
+  
+  @NodeConfig (name = Name.TIME, type = Special.class),
+  
   @NodeConfig (name = Name.PATH, type = Special.class),
   
   

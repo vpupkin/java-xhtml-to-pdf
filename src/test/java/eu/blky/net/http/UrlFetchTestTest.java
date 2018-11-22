@@ -441,17 +441,17 @@ ServletOutputStream outTmp;
 					break;
 				}
 			}
-			if (baseTmp != null) {// getTextValue()
-				System.out.println(baseTmp.getTextValue());
-				String avalTmp = baseTmp.getAttributes().get("href").getValue();
-				baseTmp.getAttributes().remove("href");
-				Attribute hrefTmp = new Attribute("href", "" + HyperLinkUtil.encode(SwapServletUrl, avalTmp));
-				baseTmp.getAttributes().add(hrefTmp);
-				System.out.println(baseTmp.getTextValue());
-
-			} else {
-				System.out.println(headTmp);
-			}
+//			if (baseTmp != null) {// getTextValue()
+//				System.out.println(baseTmp.getTextValue());
+//				String avalTmp = baseTmp.getAttributes().get("href").getValue();
+//				baseTmp.getAttributes().remove("href");
+//				Attribute hrefTmp = new Attribute("href", "" + HyperLinkUtil.encode(SwapServletUrl, avalTmp));
+//				baseTmp.getAttributes().add(hrefTmp);
+//				System.out.println(baseTmp.getTextValue());
+//
+//			} else {
+//				System.out.println(headTmp);
+//			}
 // TODO remove it			
 //			HTMLNode bodyTmp = documentTmp.getRoot().getChild(0); // HEAD-modi!
 //			HTMLDocument htmlTmp = buildToolbar(urlStr, parser2);

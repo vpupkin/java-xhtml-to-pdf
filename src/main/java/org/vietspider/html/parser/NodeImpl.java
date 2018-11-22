@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.vietspider.chars.CharsDecoder;
 import org.vietspider.chars.CharsEncoder;
 import org.vietspider.chars.SpecChar;
@@ -25,6 +26,8 @@ import org.vietspider.html.NodeIterator;
 import org.vietspider.html.Tag;
 import org.vietspider.token.TypeToken;
 import org.vietspider.token.attribute.AttributeParser;
+
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 /**
  * Created by VietSpider
@@ -137,6 +140,7 @@ public class NodeImpl extends HTMLNode {
 
   public StringBuilder buildValue(StringBuilder builder) {
 		// if(value.length < 1) return builder;
+	  
 		if (isBeautify() && builder.length() > 0) { 
 			builder.append(SpecChar.n);
 		}
@@ -360,6 +364,9 @@ public StringBuilder builXHTML(StringBuilder builder) {
 String TABBEDCHARS = "  ";
 public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 	
+  	if("A".equals(name.name())) {
+			System.out.println("A");
+	}
 	System.out.println("ele::"+LEVEL+"::"+this.getName());
 	
 	// if(value.length < 1) return builder;
@@ -380,12 +387,14 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 		int cutStart = startUp.toUpperCase().indexOf(nameTmp.toUpperCase());
 		int cutEnd = cutStart + nameTmp.length();
 		try{
-			String prefixTmp = startUp .substring(0, cutStart);
+			String prefixTmp = startUp .substring(  cutStart,cutEnd);
 			String suffixTmp = startUp .substring( cutEnd );
 			// replace by formatted attts
 			suffixTmp  = " "+AttributeParser.parse(this); 
+			//https://commons.apache.org/proper/commons-text/javadocs/api-release/org/apache/commons/text/StringEscapeUtils.html
+			//suffixTmp = escapeHtml(suffixTmp);
 			startUp  = prefixTmp+
-					   nameTmp +
+					   //nameTmp +
 					   suffixTmp;
 		}catch(java.lang.StringIndexOutOfBoundsException e){
 			System.out.println("!!!!!!!!!"+cutStart+">>>"+cutEnd+">>>"+startUp);
@@ -442,7 +451,14 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 		if (this.getConfig().end() != Tag.FORBIDDEN) { 
 			
 			builder.append("</");
-			builder.append(nameTmp);
+			char[] startTmp = getValue(); 
+			
+			String startUp = new String(startTmp);
+			
+			int cutStart = startUp.toUpperCase().indexOf(nameTmp.toUpperCase());
+			int cutEnd = cutStart + nameTmp.length();
+			String  prefixTmp = startUp .substring(  cutStart,cutEnd);;
+			builder.append(prefixTmp  );
 			builder.append('>');
 		}else {
 			builder.append('/').append('>');

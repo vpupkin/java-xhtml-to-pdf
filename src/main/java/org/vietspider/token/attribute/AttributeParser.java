@@ -6,6 +6,8 @@
 
 package org.vietspider.token.attribute;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +74,7 @@ public final class AttributeParser {
       if(value.indexOf(REF_START) > -1) {
         value = new String(refsDecoder.decode(value.toCharArray()));
       }
+      value = escapeHtml(value.replaceAll("&amp;", "&"));
       list.addElement(new Attribute(name, value, mark));
     }
     // disable forever
