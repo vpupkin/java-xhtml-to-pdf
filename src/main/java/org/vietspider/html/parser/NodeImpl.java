@@ -363,13 +363,7 @@ public StringBuilder builXHTML(StringBuilder builder) {
 }
 String TABBEDCHARS = "  ";
 public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
-	
-  	if("A".equals(name.name())) {
-			System.out.println("A");
-	}
-	System.out.println("ele::"+LEVEL+"::"+this.getName());
-	
-	// if(value.length < 1) return builder;
+ 
 	if (isBeautify() && builder.length() > 0) { 
 		builder.append(SpecChar.n);
 	}
@@ -466,16 +460,6 @@ public StringBuilder builXHTML(StringBuilder builder, int LEVEL) {
 		}
 	}
 	return builder;
-}
-
-  /*public static void next(NodeImpl node) {
-//  System.out.println(node.getName() + "  : " + node.hashCode() 
-//  + " | " + node.nextNode.getName() + " : " + node.nextNode.hashCode());
-    if(node.getChildren() == null)  return;
-    for(int i = 0; i < node.getChildren().size(); i++) {
-      next((NodeImpl)node.getChildren().get(i));
-    }
-//  System.out.println("==========================================");
-  }*/
+} 
 
 }

@@ -28,7 +28,21 @@
 	</properties>
 
 	<dependencies>
-	<!-- https://stackoverflow.com/questions/2406121/how-do-i-escape-a-string-in-java -->
+		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>9.4.14.v20181114</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>9.4.14.v20181114</version>
+		</dependency>
+
+
+		<!-- https://stackoverflow.com/questions/2406121/how-do-i-escape-a-string-in-java -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -73,7 +87,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.5.6</version>
+			<version>1.7.25</version>
 		</dependency>
 
 		<dependency>
