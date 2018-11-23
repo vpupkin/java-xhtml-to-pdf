@@ -150,7 +150,9 @@ class UrlFetchTestTest {
 		Writer xhtmlTmp = new FileWriter(xhtmlTempFile);
 		IOUtils.write(theString, xhtmlTmp);
 		xhtmlTmp.close();
-		PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
+		getCache().put("/url.html", theString);
+		PDFRenderer.renderToPDF("http://localhost:8888/url.html", "target/tmp/XHTML.pdf");
+		//PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
 
 	}
