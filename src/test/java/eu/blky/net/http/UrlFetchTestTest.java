@@ -62,12 +62,15 @@ import cc.co.llabor.cache.js.JSStore;
 import static org.junit.Assert.*;
 
 class UrlFetchTestTest {
+	private static final String MYLOCALTESTENVIROMENT = "mylocaltestenviroment";
 	private static final Logger log = LoggerFactory.getLogger(UrlFetchTest.class.getName());
 	private static final boolean TRACE = true;
 	private static final String CHARSET_PREFIX = "charset=";
 
-	private String SwapServletUrl = "local".equals(System.getProperty("myenviroment")) ? "http://localhost:8888/l/"
-			: "https://rrdsaas.appspot.com/l/"; // prod
+	private String SwapServletUrl =
+			"local".equals(System.getProperty(MYLOCALTESTENVIROMENT)) ? 
+					"http://localhost:8888/l/" 			: 
+					"https://rrdsaas.appspot.com/l/"; // prod
 
 	static Server server ;
 	private static URI serverUri;
@@ -83,6 +86,7 @@ class UrlFetchTestTest {
 
 	@BeforeAll
 	static void  startServer() throws Exception {
+		System.setProperty(UrlFetchTestTest.MYLOCALTESTENVIROMENT, "local");
 		serverUri=new URI("http://localhost:8888");
 		// Create Server
 		server = new Server(8888);
@@ -99,57 +103,71 @@ class UrlFetchTestTest {
 		server.start();
 	}
 
+	String timebaseTmp = "TMP" + System.currentTimeMillis();
 	
     @Test
     public void testGet() throws Exception
     {
+    	getCache().put("/index.htm", "yyyyxxxxxxxxxxxxxxxxxyyy");
         // Test GET
-        HttpURLConnection http = (HttpURLConnection) serverUri.resolve("/pom.xml").toURL().openConnection();
+        HttpURLConnection http = (HttpURLConnection) serverUri.resolve("/index.htm").toURL().openConnection();
         http.connect();
         InputStream isTmp = http.getInputStream();
         
         assertEquals("Response Code", http.getResponseCode(), 200 );
         String htmldataTmp = IOUtils.toString(isTmp);
-        assertTrue( "body", htmldataTmp.indexOf("version")>1 );
+        assertTrue( "body", htmldataTmp.indexOf("xxx")>=0 );
+        
         
     }	
+    // initiate URL to fetch
+    static String [] urls ={
+			"https://en.wikipedia.org/wiki/Al-Samakiyya",
+			"https://en.wikipedia.org/wiki/Ret_finger_protein_like_4B",
+			"https://en.wikipedia.org/wiki/John_III,_Count_of_Dreux",
+			"https://en.wikipedia.org/wiki/Pathein_Airport"
+			
+	};
+	static String url = urls[(int) (urls.length*Math.random())];
+	//		"https://en.wikipedia.org/wiki/Special:Random"; 
+	// url = "http://xmlsoft.org/xmllint.html";
+	// url = "https://habr.com/company/dataart/blog/430514/";
+//	@BeforeAll
+//	static void initURL() throws ClientProtocolException, IOException{ 
+//		// plain fetch
+//		UrlFetchTest f = new UrlFetchTest();
+//		HttpResponse o = f.fetchGetResp(url); 
+//		System.out.println(o.toString());
+//		HttpEntity entity = o.getEntity();
+//		System.out.println(entity);
+//    }
 	
 	@Test
-	void test() throws Exception {
-		UrlFetchTest t = new UrlFetchTest();
-		String url = "https://en.wikipedia.org/wiki/Special:Random";
-
-		// url = "http://xmlsoft.org/xmllint.html";
-		// url = "https://habr.com/company/dataart/blog/430514/";
-
-		String timebaseTmp = "TMP" + System.currentTimeMillis();
-
-		// plain fetch
-		HttpResponse o = t.fetchGetResp(url);
-		System.out.println(o.toString());
-		HttpEntity entity = o.getEntity();
-		System.out.println(entity);
-		File createTempFile = File.createTempFile(timebaseTmp, ".html");
-		Writer htmlTmp = new FileWriter(createTempFile);
-		String htmldataTmp = IOUtils.toString(entity.getContent());
-		IOUtils.write(htmldataTmp, htmlTmp);
-		System.out.println("plain html: " + htmldataTmp);
-		htmlTmp.close();
-		PDFRenderer.renderToPDF(url, "target/tmp/phtml.pdf");
-
-		// html-> xmlhtml fetch
+	void testXHTML() throws Exception { 
+		// html fetch-> xmlhtml->file->pdf
 		String theString = getAsXHTML(url);
 		File xhtmlTempFile = File.createTempFile(timebaseTmp, ".xhtml");
 		Writer xhtmlTmp = new FileWriter(xhtmlTempFile);
 		IOUtils.write(theString, xhtmlTmp);
 		xhtmlTmp.close();
-
-		System.out.println(theString);
-
 		PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
 
 	}
+	
+	@Test
+	void testPLAIN() throws Exception {
+		UrlFetchTest htmlFetcherTmp = new UrlFetchTest();
+		File createTempFile = File.createTempFile(timebaseTmp, ".html");
+		Writer htmlTmp = new FileWriter(createTempFile);
+		HttpResponse o = htmlFetcherTmp.fetchGetResp(url);
+		HttpEntity entity = o.getEntity();
+		String htmldataTmp = IOUtils.toString(entity.getContent());
+		IOUtils.write(htmldataTmp, htmlTmp);
+		System.out.println("plain html: " + htmldataTmp);
+		htmlTmp.close();
+		PDFRenderer.renderToPDF(url, "target/tmp/phtml.pdf"); 
+	}	
 
 	// public void doGetPost(HttpServletRequest req, HttpServletResponse resp)
 	// throws IOException {
