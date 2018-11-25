@@ -20,7 +20,7 @@ import net.sf.jsr107cache.Cache;
  */ 
 public class JSStore { 
 	 
-	private static final String SCRIPTSTORE = "SCRIPTSTORE";
+	public static final String SCRIPTSTORE = "SCRIPTSTORE";
 	private static final JSStore me = new JSStore();
 	volatile Cache  scriptStore  = null;
 	JSStore() { 

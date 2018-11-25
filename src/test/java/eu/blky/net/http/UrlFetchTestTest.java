@@ -13,11 +13,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
+import java.util.List; 
 import java.util.zip.GZIPInputStream;
-
-import javax.servlet.Servlet;
+ 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,15 +27,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
+import org.apache.http.HttpResponse; 
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -73,9 +73,18 @@ class UrlFetchTestTest {
 					"https://rrdsaas.appspot.com/l/"; // prod
 
 	static Server server ;
-	private static URI serverUri;
+	static URI serverUri;
+	  
 	
-	@AfterClass
+	@BeforeAll
+	static void initTest() throws Exception{
+		System.setProperty(UrlFetchTestTest.MYLOCALTESTENVIROMENT, "local");
+		serverUri=new URI("http://localhost:8888");
+
+		
+	}
+	
+	@AfterAll 
 	public static void stopJetty() {
 		try {
 			server.stop();
@@ -84,23 +93,26 @@ class UrlFetchTestTest {
 		}
 	}
 
-	@BeforeAll
-	static void  startServer() throws Exception {
-		System.setProperty(UrlFetchTestTest.MYLOCALTESTENVIROMENT, "local");
-		serverUri=new URI("http://localhost:8888");
+	 
+	public void  defineFetcher() throws Exception {
+		//server.stop();
 		// Create Server
-		server = new Server(8888);
+				server = new Server(8888);
+				// Start Server
+				//server.start();
+		
 		ServletContextHandler context = new ServletContextHandler();
 
-		DefaultServlet ds = new DefaultServlet();
+		DefaultServlet ds = new DefaultServlet(this);
 		ServletHolder defaultServ = new ServletHolder("default", ds);
 		defaultServ.setInitParameter("resourceBase", System.getProperty("user.dir"));
 		defaultServ.setInitParameter("dirAllowed", "true");
 		context.addServlet(defaultServ, "/");
 		server.setHandler(context);
 
-		// Start Server
+		
 		server.start();
+
 	}
 
 	String timebaseTmp = "TMP" + System.currentTimeMillis();
@@ -108,6 +120,9 @@ class UrlFetchTestTest {
     @Test
     public void testGet() throws Exception
     {
+    	
+    	defineFetcher();
+    	
     	getCache().put("/index.htm", "yyyyxxxxxxxxxxxxxxxxxyyy");
         // Test GET
         HttpURLConnection http = (HttpURLConnection) serverUri.resolve("/index.htm").toURL().openConnection();
@@ -144,13 +159,18 @@ class UrlFetchTestTest {
 	
 	@Test
 	void testXHTML() throws Exception { 
+		
+		defineFetcher();
+		
 		// html fetch-> xmlhtml->file->pdf
-		String theString = getAsXHTML(url);
+		//String theString = getAsXHTML(url);
+		FetchObj o = smartFetch(url);
 		File xhtmlTempFile = File.createTempFile(timebaseTmp, ".xhtml");
 		Writer xhtmlTmp = new FileWriter(xhtmlTempFile);
-		IOUtils.write(theString, xhtmlTmp);
+		//IOUtils.write(theString, xhtmlTmp);
+		IOUtils.write(o.getData(), xhtmlTmp);
 		xhtmlTmp.close();
-		getCache().put("/url.html", theString);
+		getCache().put("/url.html", new String(o.getData()) );
 		PDFRenderer.renderToPDF("http://localhost:8888/url.html", "target/tmp/XHTML.pdf");
 		//PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
@@ -173,9 +193,9 @@ class UrlFetchTestTest {
 
 	// public void doGetPost(HttpServletRequest req, HttpServletResponse resp)
 	// throws IOException {
-	public String getAsXHTML(String urlStr) throws Exception {
+	public FetchObj smartFetch(String urlStr) throws Exception {
 		ByteArrayOutputStream myBAOS = new ByteArrayOutputStream();
-		HttpServletResponse resp = getHttpResponse(myBAOS);
+		FetchObj resp = getHttpResponse(myBAOS);
 		//
 		StringBuilder targetUrl = null;
 		//
@@ -280,7 +300,7 @@ class UrlFetchTestTest {
 		HttpResponse xRespTmp = null;
 		Cache getCache = getCache();
 
-		ServletOutputStream outTmp;
+	 
 		// if ("POST".equals(req.getMethod()) && !isRootReq(req)) {
 		if ("POST".equals("notsupprted")) {
 			List<MemoryFileItem> items = null;
@@ -324,9 +344,8 @@ class UrlFetchTestTest {
 					// write cached !
 					LCacheEntry theItem = (LCacheEntry) dataTmp;
 					resp.setContentType(theItem.getCxType());
-					outTmp = resp.getOutputStream();
-					outTmp.write(theItem.getBytes());
-					return myBAOS.toString();
+					resp.getOutputStream().write(theItem.getBytes());
+					return new FetchObj(  myBAOS );//.toString()
 				} else {
 					try {
 						getCache.remove(urlStr);
@@ -351,27 +370,27 @@ class UrlFetchTestTest {
 			if (statusLine.getStatusCode() == 401) {
 				resp.setStatus(401);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			} else if (statusLine.getStatusCode() == 301) {
 				resp.setStatus(301);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			} else if (statusLine.getStatusCode() == 302) {
 				resp.setStatus(302);// xRespTmp.getAllHeaders()
 				resp.setHeader("Location", requestURL.toString());
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			} else if (statusLine.getStatusCode() == 303) {
 				resp.setStatus(303);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			} else if (statusLine.getStatusCode() == 304) {
 				resp.setStatus(304);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			} else if (statusLine.getStatusCode() == 305) {
 				resp.setStatus(305);
 				resp.setHeader("WWW-Authenticate", wwwAuthTmp);
-				return myBAOS.toString();
+				return new FetchObj(  myBAOS );//.toString()
 			}
 		} catch (Exception e) {
 			if (TRACE)
@@ -409,16 +428,17 @@ class UrlFetchTestTest {
 
 		if (isCSS(contextTypeStr)) {
 			setupResponseProperty(resp, xRespTmp);
-			outTmp = performCSS(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
-			return myBAOS.toString();
+			performCSS(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
+			return resp;
 		} else if (isBinary(contextTypeStr)) {
+			resp.setContentType(contextTypeStr.substring("Content-Type: ".length()));
 			setupResponseProperty(resp, xRespTmp);
-			outTmp = performBinary(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
-			return myBAOS.toString();
+			performBinary(resp, contextTypeStr, urlStr, xRespTmp, entity, contextEncStr);
+			return resp;
 		} else if (isScript(contextTypeStr)) {
 			setupResponseProperty(resp, xRespTmp);
-			outTmp = performScript(resp, contextTypeStr, urlStr, entity, contextEncStr);
-			return myBAOS.toString();
+			performScript(resp, contextTypeStr, urlStr, entity, contextEncStr);
+			return resp;
 
 		} else {
 
@@ -497,7 +517,7 @@ class UrlFetchTestTest {
 		if (!"null".equals("" + contextEncStr)) {
 			resp.setCharacterEncoding(contextEncStr);
 		}
-		outTmp = resp.getOutputStream();
+		
 		String textValue = null;
 		// wrap
 		// try {
@@ -581,9 +601,9 @@ class UrlFetchTestTest {
 		} else {
 			bytesTmp = textValue.getBytes();
 		}
-		outTmp.write(bytesTmp);
+		resp.getOutputStream().write(bytesTmp);
 		// and cache it! // String cxType = contextTypeStr.substring(beginIndex);
-		cacheIt(urlStr, getCache, bytesTmp, cxType);
+		cacheIt(urlStr, getCache, resp.getBytes(), cxType);
 
 		// }catch( BlackListedException e){
 		// goToGoooo(resp);
@@ -597,7 +617,7 @@ class UrlFetchTestTest {
 		//
 		// }
 
-		return myBAOS.toString();
+		return resp;//.toString()
 	}
 
 	private UrlFetchTest getInstance() {
@@ -606,8 +626,9 @@ class UrlFetchTestTest {
 
 	}
 
-	private HttpServletResponse getHttpResponse(ByteArrayOutputStream oaosPar) {
-		HttpServletResponse retval = new FakeHttpServletResponse(oaosPar);
+	private FetchObj getHttpResponse(ByteArrayOutputStream oaosPar) {
+		FetchObj retval = new FetchObj(oaosPar);
+		 
 		return retval;
 	}
 
@@ -841,7 +862,7 @@ class UrlFetchTestTest {
 		return outTmp;
 	}
 
-	private static void cacheIt(String urlStr, byte[] bytesTmp, String contextTypeStr) {
+	static void cacheIt(String urlStr, byte[] bytesTmp, String contextTypeStr) {
 		cacheIt(urlStr, getCache(), bytesTmp, contextTypeStr);
 	}
 

@@ -15,7 +15,7 @@ public class LServlet {
 	private static final Logger log = LoggerFactory.getLogger(LServlet.class.getName());
 	public static final boolean TRACE = true;
 	private static HyperLinkUtil handler = new HyperLinkUtil();
-	public static final String SwapServletUrl = "TODO";
+	public static final String SwapServletUrl = "TOSwapServletUrlDO";
 
 	public static String calcBase() {
 		return SwapServletUrl;

@@ -20,7 +20,7 @@ import net.sf.jsr107cache.Cache;
  */ 
 public class CSStore { 
 	 
-	private static final String CSSSTORE = "CSSSTORE";
+	public static final String CSSSTORE = "CSSSTORE";
 	private static final CSStore me = new CSStore();
 	Cache  store  = null;
 	CSStore() {
