@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.vietspider.chars.CharsDecoder;
 import org.vietspider.chars.CharsEncoder;
 import org.vietspider.chars.SpecChar;
@@ -27,7 +26,7 @@ import org.vietspider.html.Tag;
 import org.vietspider.token.TypeToken;
 import org.vietspider.token.attribute.AttributeParser;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+
 
 /**
  * Created by VietSpider

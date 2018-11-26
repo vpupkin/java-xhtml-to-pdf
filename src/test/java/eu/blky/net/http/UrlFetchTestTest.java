@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -37,6 +38,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -66,10 +68,12 @@ class UrlFetchTestTest {
 	private static final Logger log = LoggerFactory.getLogger(UrlFetchTest.class.getName());
 	private static final boolean TRACE = true;
 	private static final String CHARSET_PREFIX = "charset=";
+	private static final int SERVER_PORT_8888 = 8888;
 
 	private String SwapServletUrl =
 			"local".equals(System.getProperty(MYLOCALTESTENVIROMENT)) ? 
-					"http://localhost:8888/l/" 			: 
+					"http://localhost:"+SERVER_PORT_8888+"/l/" 			:
+					//"http://localhost/l/" 			:
 					"https://rrdsaas.appspot.com/l/"; // prod
 
 	static Server server ;
@@ -79,7 +83,8 @@ class UrlFetchTestTest {
 	@BeforeAll
 	static void initTest() throws Exception{
 		System.setProperty(UrlFetchTestTest.MYLOCALTESTENVIROMENT, "local");
-		serverUri=new URI("http://localhost:8888");
+		serverUri=new URI("http://localhost:"+SERVER_PORT_8888);
+		//serverUri=new URI("http://localhost");
 
 		
 	}
@@ -97,7 +102,8 @@ class UrlFetchTestTest {
 	public void  defineFetcher() throws Exception {
 		//server.stop();
 		// Create Server
-				server = new Server(8888);
+				server = new Server(SERVER_PORT_8888);
+				//server = new Server(80);
 				// Start Server
 				//server.start();
 		
@@ -117,7 +123,8 @@ class UrlFetchTestTest {
 
 	String timebaseTmp = "TMP" + System.currentTimeMillis();
 	
-    @Test
+	@Ignore
+    //@Test
     public void testGet() throws Exception
     {
     	
@@ -137,13 +144,21 @@ class UrlFetchTestTest {
     }	
     // initiate URL to fetch
     static String [] urls ={
+    		"https://habr.com/post/431016/",
+    		"https://habr.com/post/423889/",
+    		"https://habr.com/post/431010/",
+    		"https://habr.com/post/430996/",
+    		
 			"https://en.wikipedia.org/wiki/Al-Samakiyya",
 			"https://en.wikipedia.org/wiki/Ret_finger_protein_like_4B",
 			"https://en.wikipedia.org/wiki/John_III,_Count_of_Dreux",
 			"https://en.wikipedia.org/wiki/Pathein_Airport"
 			
 	};
-	static String url = urls[(int) (urls.length*Math.random())];
+	static String url
+	//= "https://habr.com/post/"+(423889*Math.random())+"/";
+	= urls[(int) (urls.length*Math.random())];
+	
 	//		"https://en.wikipedia.org/wiki/Special:Random"; 
 	// url = "http://xmlsoft.org/xmllint.html";
 	// url = "https://habr.com/company/dataart/blog/430514/";
@@ -171,7 +186,7 @@ class UrlFetchTestTest {
 		IOUtils.write(o.getData(), xhtmlTmp);
 		xhtmlTmp.close();
 		getCache().put("/url.html", new String(o.getData()) );
-		PDFRenderer.renderToPDF("http://localhost:8888/url.html", "target/tmp/XHTML.pdf");
+		PDFRenderer.renderToPDF("http://localhost/url.html", "target/tmp/XHTML.pdf");
 		//PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
 

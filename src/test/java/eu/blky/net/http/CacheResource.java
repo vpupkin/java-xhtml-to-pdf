@@ -17,6 +17,7 @@ import cc.co.llabor.cache.css.CSStore;
 import cc.co.llabor.cache.js.Item;
 import cc.co.llabor.cache.js.JSStore; 
 import net.sf.jsr107cache.Cache;
+import ws.rrd.server.LCacheEntry;
 
 public class CacheResource extends Resource { 
  
@@ -24,16 +25,24 @@ public class CacheResource extends Resource {
 	private String pathInContext;
 	private long lastModified = System.currentTimeMillis()/1000;
 	private long length;
+	private boolean exists = true;
 
 	public CacheResource(String pathInContext) {
 		this.pathInContext = pathInContext;
 		Cache cachTmp = search4cache();
 		Object o = cachTmp.get(this.pathInContext);
-		if (o instanceof cc.co.llabor.cache.js.Item) {
+		if (o instanceof ws.rrd.server.LCacheEntry) {
+			LCacheEntry ceTmp = (ws.rrd.server.LCacheEntry)o; 
+			length = ceTmp.getBytes().length;
+			this.is =  new ByteArrayInputStream( ceTmp.getBytes() );			
+		}else if (o instanceof cc.co.llabor.cache.js.Item) {
 			Item oTmp = (cc.co.llabor.cache.js.Item)o;
 			length = oTmp.getValue().length();
+			this.is = new ByteArrayInputStream(oTmp.toString().getBytes());
 		}else {
 			length = o.toString().getBytes().length ; //it.toString().getBytes()
+			Object it = search4cache().get(this.pathInContext);
+			this.is = new ByteArrayInputStream(it.toString().getBytes());
 		}
 	}
 
@@ -44,13 +53,13 @@ public class CacheResource extends Resource {
 
 	@Override
 	public void close() {
-		if (null!=retval )retval.delete();
+		// 
 	}
 
 	@Override
 	public boolean exists() { 
-		Cache cachTmp = search4cache();
-		return  null !=  cachTmp ; 
+		 
+		return  exists  ; 
 	}
 
 	@Override
@@ -80,23 +89,11 @@ public class CacheResource extends Resource {
 	public URL getURL() {
 		 return null; 
 	}
-
-	File retval ;
+ 
+	private InputStream is;
 	@Override
 	public File getFile() throws IOException {
-		retval = File.createTempFile("del.", ".me");
-		retval .deleteOnExit();
-		
-		FileWriter output = new FileWriter(retval);
-		Object it = search4cache().get(this.pathInContext);
-		if (it instanceof Object) {
-			System.out.println(it);
-		}
-		byte[] data=it.toString().getBytes();
-		IOUtils.write(data, output );
-		
-		output.close();
-		return retval; 
+		return null;
 	}
 
 	@Override
@@ -106,11 +103,7 @@ public class CacheResource extends Resource {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		Object it = search4cache().get(this.pathInContext);
-		if (it instanceof Object) {
-			System.out.println( it );
-		}
-		return new ByteArrayInputStream(it.toString().getBytes()); 
+		return is; 
 	}
 
 	@Override

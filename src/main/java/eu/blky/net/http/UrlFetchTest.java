@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -18,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer; 
-import org.htmlparser.http.Cookie; 
-
+import org.htmlparser.http.Cookie;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -308,6 +309,14 @@ public class UrlFetchTest implements Serializable{
 				System.out.println(userPasswordTmp+";;;=="+userTmp+"//"+pwdTmp);
 			}catch(Throwable e){}
 		}
+		/*
+		import org.apache.commons.lang.StringEscapeUtils;
+		import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+		*/
+		try {
+			fetchUrl= StringEscapeUtils.unescapeHtml(fetchUrl);//unescapeHtml(fetchUrl);
+			fetchUrl = fetchUrl.substring(0,fetchUrl.indexOf("?")+1 )+ URLEncoder.encode(fetchUrl.substring(fetchUrl.indexOf("?"))+1, "UTF-8");
+		}catch(Exception e) {}
 		HttpUriRequest m = new HttpGet(fetchUrl);
 		for (String[] nextHeader : headers){
 			String headerNameTmp = nextHeader[0];
