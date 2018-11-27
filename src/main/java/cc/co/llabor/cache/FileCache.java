@@ -138,7 +138,7 @@ public class FileCache implements Cache,Serializable {
 			InputStream fis;
 			synchronized (CommentedProperties.class) {
 				fis = newFileInputStream(fTmp);
-				if ((""+key).endsWith(".properties") || (""+key).endsWith("/.!")){
+				if ((""+key).endsWith(".properties") ){//|| (""+key).endsWith("/.!")
 //					CommentedProperties
 					retval = new CommentedProperties();
 					((CommentedProperties)retval).load(fis);

@@ -21,20 +21,24 @@ public class DefaultServlet extends  org.eclipse.jetty.servlet.DefaultServlet{
  		Resource retval = null;
  		if (pathInContext.startsWith("/l/")) {
  			String url = new String( Base64.getDecoder().decode( pathInContext.substring(3) ) )  ;
- 			try {
-				FetchObj dataTmp = fetcher.smartFetch(url);
-				// store to cache 
-				UrlFetchTestTest.cacheIt( url, dataTmp.getBytes(), dataTmp.getContentType()) ; 
-				UrlFetchTestTest.cacheIt( pathInContext, dataTmp.getBytes(), dataTmp.getContentType()) ; 
-				retval = new CacheResource(url) ;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+ 			if (!UrlFetchTestTest.isCached(url)) {
+	 			try { 
+					FetchObj dataTmp = fetcher.smartFetch(url);
+					System.out.println("STATUS:"+dataTmp.getStatus());
+					// store to cache 
+					//UrlFetchTestTest.cacheIt( url, dataTmp.getBytes(), dataTmp.getContentType()) ; 
+					//UrlFetchTestTest.cacheIt( pathInContext, dataTmp.getBytes(), dataTmp.getContentType()) ; 
+					retval = new CacheResource(url, dataTmp.getBytes(), dataTmp.getContentType()) ;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+ 			
+ 			}
+ 			retval = new CacheResource(url) ;
  			
  		}else {
  			retval = new CacheResource(pathInContext) ;
- 			
  		}
  		
  		return retval;

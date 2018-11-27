@@ -31,6 +31,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse; 
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -68,7 +69,9 @@ class UrlFetchTestTest {
 	private static final Logger log = LoggerFactory.getLogger(UrlFetchTest.class.getName());
 	private static final boolean TRACE = true;
 	private static final String CHARSET_PREFIX = "charset=";
-	private static final int SERVER_PORT_8888 = 8888;
+	public static final int SERVER_PORT_8888 = 8888;
+	private static final int MAX_SUPPORTED_URL_LENGTH = 200;
+	static final String FETCH_URL = "http://localhost:"+UrlFetchTestTest.SERVER_PORT_8888+"";
 
 	private String SwapServletUrl =
 			"local".equals(System.getProperty(MYLOCALTESTENVIROMENT)) ? 
@@ -107,13 +110,17 @@ class UrlFetchTestTest {
 				// Start Server
 				//server.start();
 		
-		ServletContextHandler context = new ServletContextHandler();
+		ServletContextHandler context = new ServletContextHandler() {
+ 
+			
+		};
 
 		DefaultServlet ds = new DefaultServlet(this);
 		ServletHolder defaultServ = new ServletHolder("default", ds);
 		defaultServ.setInitParameter("resourceBase", System.getProperty("user.dir"));
 		defaultServ.setInitParameter("dirAllowed", "true");
 		context.addServlet(defaultServ, "/");
+		
 		server.setHandler(context);
 
 		
@@ -144,15 +151,35 @@ class UrlFetchTestTest {
     }	
     // initiate URL to fetch
     static String [] urls ={
-    		"https://habr.com/post/431016/",
-    		"https://habr.com/post/423889/",
-    		"https://habr.com/post/431010/",
-    		"https://habr.com/post/430996/",
+    		"https://en.wikipedia.org/wiki/Scalable_Vector_Graphics",
+//    		"http://www.oracle.com/splash/java.net/maintenance/index.html",
+//    		"https://www.quackit.com/html/templates/simple_website_templates.cfm",
+//    		"https://www.sheldonbrown.com/web_sample1.html",
+//    		"https://www.york.ac.uk/teaching/cws/wws/webpage1.html",
+//    		"http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm",
     		
-			"https://en.wikipedia.org/wiki/Al-Samakiyya",
-			"https://en.wikipedia.org/wiki/Ret_finger_protein_like_4B",
-			"https://en.wikipedia.org/wiki/John_III,_Count_of_Dreux",
-			"https://en.wikipedia.org/wiki/Pathein_Airport"
+//    		"https://stackoverflow.com/questions/1108/how-does-database-indexing-work?rq=1",
+//    		"https://stackoverflow.com/questions/1156/how-do-i-index-a-database-column",
+//    		"https://docs.oracle.com/cd/B28359_01/server.111/b28310/indexes003.htm#ADMIN11722",
+//    		"https://www.techopedia.com/definition/24080/database-administration",
+//    		"https://www.pluralsight.com/resource-center/guides/guide-to-becoming-a-database-admin",
+//    		"https://web.de/magazine/politik/strasse-kertsch-ukraine-russland-konfrontationskurs-westen-versucht-schlichten-33436334",
+//    		"https://www.bbc.com/news/world-europe-46340283",
+//    		"https://edition.cnn.com/2018/11/26/europe/ukraine-russia-kerch-strait-intl/index.html",
+//    		"https://www.bild.de/news/ausland/news-ausland/pornos-statt-koran-indonesisches-dorf-schraenkt-wlan-ein-58653512.bild.html",
+//    		"https://habr.com/post/431016/",
+//    		
+//    		"https://habr.com/post/423889/",
+//    		"https://habr.com/post/431010/",
+//    		"https://habr.com/post/430996/",
+//    		
+//			"https://en.wikipedia.org/wiki/Al-Samakiyya",
+//			"https://en.wikipedia.org/wiki/Ret_finger_protein_like_4B",
+//			"https://en.wikipedia.org/wiki/John_III,_Count_of_Dreux",
+//			"https://en.wikipedia.org/wiki/Pathein_Airport"
+//    		"http://java.net/index.html"
+//    		"https://en.wikipedia.org/wiki/Raster_graphics"
+    		"https://en.wikipedia.org/wiki/Special:Random"
 			
 	};
 	static String url
@@ -185,8 +212,9 @@ class UrlFetchTestTest {
 		//IOUtils.write(theString, xhtmlTmp);
 		IOUtils.write(o.getData(), xhtmlTmp);
 		xhtmlTmp.close();
-		getCache().put("/url.html", new String(o.getData()) );
-		PDFRenderer.renderToPDF("http://localhost/url.html", "target/tmp/XHTML.pdf");
+		cacheIt("/url.html", o.getData(), o.getContentType());
+		
+		PDFRenderer.renderToPDF(UrlFetchTestTest.FETCH_URL+"/url.html", "target/tmp/XHTML.pdf");
 		//PDFRenderer.renderToPDF(xhtmlTempFile, "target/tmp/XHTML.pdf");
 		// PDFRenderer.renderToPDF(url, pdf);
 
@@ -665,9 +693,12 @@ class UrlFetchTestTest {
 	}
 
 	public static String calcCackeKey(String urlStr) {
-		String key = urlStr;
+		
+		String key = (""+urlStr).length()<MAX_SUPPORTED_URL_LENGTH?urlStr:(""+urlStr.hashCode());
 		key = key.lastIndexOf("/") - key.indexOf("://") < 5 ? key + "/.!" : key;
 		key = key.lastIndexOf("/") == key.length() - 1 ? key + ".!" : key;
+		//TODO
+		//------------------???key="/url.html".equals(urlStr)?urlStr:key;
 		return key;
 	}
 
@@ -881,6 +912,25 @@ class UrlFetchTestTest {
 		cacheIt(urlStr, getCache(), bytesTmp, contextTypeStr);
 	}
 
+	public static boolean isCached(String urlStr) {
+		String key = calcCackeKey(urlStr);
+		Cache cache = search4cache(key) ;
+		return null != cache;
+	}
+
+	private static Cache search4cache(String pathInContext ) {
+		Cache cachTmp = null ;
+		cachTmp = null !=  Manager.getCache("getCache@" + UrlFetchTestTest.class.getName()).get(pathInContext) ?  Manager.getCache("getCache@" + UrlFetchTestTest.class.getName()): null;
+		cachTmp = null !=  Manager.getCache(CSStore.CSSSTORE).get(pathInContext)  ? Manager.getCache(CSStore.CSSSTORE):cachTmp;
+		cachTmp = null !=  Manager.getCache(JSStore.SCRIPTSTORE).get(pathInContext) ?Manager.getCache(JSStore.SCRIPTSTORE):cachTmp;
+		return cachTmp;
+	}
+	public static Object getCached(String urlStr) {
+		String key = calcCackeKey(urlStr);
+		Cache cache = search4cache(key) ;
+		return cache.get(key);
+	}
+	
 	public static void cacheIt(String urlStr, Cache getCache, byte[] bytesTmp, String cxType) {
 		String key = calcCackeKey(urlStr);
 		try {

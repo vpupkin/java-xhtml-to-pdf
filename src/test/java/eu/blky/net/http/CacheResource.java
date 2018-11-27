@@ -21,17 +21,22 @@ import ws.rrd.server.LCacheEntry;
 
 public class CacheResource extends Resource { 
  
-	
+	private InputStream is;
+	private String name = System.currentTimeMillis()+".xhtml";	
 	private String pathInContext;
 	private long lastModified = System.currentTimeMillis()/1000;
 	private long length;
 	private boolean exists = true;
 
-	public CacheResource(String pathInContext) {
-		this.pathInContext = pathInContext;
-		Cache cachTmp = search4cache();
-		Object o = cachTmp.get(this.pathInContext);
-		if (o instanceof ws.rrd.server.LCacheEntry) {
+	public CacheResource(String pathPar) {
+		this.pathInContext =pathPar; //  UrlFetchTestTest.FETCH_URL+"/"+
+		name+= pathInContext ;
+		Object o =  UrlFetchTestTest.getCached(pathInContext);
+		if (o instanceof cc.co.llabor.cache.css.Item){
+			cc.co.llabor.cache.css.Item it = (cc.co.llabor.cache.css.Item) o;
+			length = it.getValue().length();
+			this.is = new ByteArrayInputStream(it.toString().getBytes());
+		}else if (o instanceof ws.rrd.server.LCacheEntry) {
 			LCacheEntry ceTmp = (ws.rrd.server.LCacheEntry)o; 
 			length = ceTmp.getBytes().length;
 			this.is =  new ByteArrayInputStream( ceTmp.getBytes() );			
@@ -40,10 +45,14 @@ public class CacheResource extends Resource {
 			length = oTmp.getValue().length();
 			this.is = new ByteArrayInputStream(oTmp.toString().getBytes());
 		}else {
-			length = o.toString().getBytes().length ; //it.toString().getBytes()
-			Object it = search4cache().get(this.pathInContext);
-			this.is = new ByteArrayInputStream(it.toString().getBytes());
+			length = o.toString().getBytes().length ; 
+			this.is = new ByteArrayInputStream(o.toString().getBytes());
 		}
+	}
+
+	public CacheResource(String url, byte[] bytesTmp, String contentType) {
+		this.pathInContext = url;
+		UrlFetchTestTest.cacheIt( url, bytesTmp, contentType) ;
 	}
 
 	@Override
@@ -77,20 +86,13 @@ public class CacheResource extends Resource {
 		return length;
 	}
 
-	private Cache search4cache() {
-		Cache cachTmp = null ;
-		cachTmp = null !=  Manager.getCache("getCache@" + UrlFetchTestTest.class.getName()).get(pathInContext) ?  Manager.getCache("getCache@" + UrlFetchTestTest.class.getName()): null;
-		cachTmp = null !=  Manager.getCache(CSStore.CSSSTORE).get(pathInContext)  ? Manager.getCache(CSStore.CSSSTORE):cachTmp;
-		cachTmp = null !=  Manager.getCache(JSStore.SCRIPTSTORE).get(pathInContext) ?Manager.getCache(JSStore.SCRIPTSTORE):cachTmp;
-		return cachTmp;
-	}
-
+ 
 	@Override
 	public URL getURL() {
 		 return null; 
 	}
  
-	private InputStream is;
+
 	@Override
 	public File getFile() throws IOException {
 		return null;
@@ -98,7 +100,8 @@ public class CacheResource extends Resource {
 
 	@Override
 	public String getName() {
-		return this.pathInContext; 
+	 
+		return name; 
 	}
 
 	@Override
